@@ -1,10 +1,9 @@
 import {supabase} from "./supabase.js";
-import {mainKeyboard,sendMessage,answerCallbackQuery,getTelegramFileUrl} from "./telegram.js";
+import {mainKeyboard,sendMessage,answerCallbackQuery} from "./telegram.js";
 import {adminKeyboard} from "./keyboards.js";
 import {isAdmin,adminMenu,adminTools,generateCodes,listStudents,showStudent,toggleStudent,resetStudentCode,listSubjects,listLectures,listEvents,broadcast,createEvent} from "./admin.js";
 import {showSubjects,showSubjectLectures,sendLectureById,showLatest,showAnnouncements,showEvents} from "./content.js";
 import {searchLectures} from "./search.js";
-import {askCourseAI,indexLecture} from "./ai.js";
 
 type Message={message_id:number;chat:{id:number};from?:{id:number};text?:string;document?:{file_id:string;file_name?:string;mime_type?:string}};
 type Callback={id:string;from:{id:number};data?:string};
@@ -42,10 +41,12 @@ async function adminFlow(id:number,text:string,s:any){
   if(s?.state==="lecture_title"){await save(id,"lecture_professor",{...(s.data??{}),title:text});return void await sendMessage(id,"👨‍🏫 اكتب اسم الدكتور.");}
   if(s?.state==="lecture_professor"){
     const d=s.data??{};
-    const {data:lecture,error}=await supabase.from("lectures").insert({subject_id:d.subject_id,lecture_number:d.lecture_number,title:d.title,professor_name:text,telegram_file_id:d.file_id,index_status:"pending"}).select("id").single();
-    if(error?.code==="23505")return void await sendMessage(id,"❌ المحاضرة موجودة بالفعل.");if(error)throw error;
-    await save(id,"publish_confirm",{...d,professor_name:text,lecture_id:lecture.id});
-    return void await sendMessage(id,"📋 مراجعة المحاضرة\n\n📚 "+d.subject_name+"\n🔢 محاضرة "+d.lecture_number+"\n📝 "+d.title+"\n👨‍🏫 "+text+"\n\nتأكيد النشر؟",{inline_keyboard:[[{text:"✅ نشر وفهرسة AI",callback_data:"publishlecture:"+lecture.id},{text:"❌ إلغاء",callback_data:"cancelpublish:"+lecture.id}]]});
+    const {error}=await supabase.from("lectures").insert({subject_id:d.subject_id,lecture_number:d.lecture_number,title:d.title,professor_name:text,telegram_file_id:d.file_id});
+    if(error?.code==="23505")return void await sendMessage(id,"❌ المحاضرة موجودة بالفعل.",adminKeyboard);
+    if(error)throw error;
+    await clear(id);
+    await log(id,"lecture_published",{subject_id:d.subject_id,lecture_number:d.lecture_number});
+    return void await sendMessage(id,"✅ تم نشر المحاضرة بنجاح.",adminKeyboard);
   }
 }
 
