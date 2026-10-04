@@ -5,7 +5,7 @@ export async function showSubjects(id:number){
   await sendMessage(id,"📚 اختار المادة:",{inline_keyboard:data.map((s:any)=>[{text:s.name,callback_data:"subject:"+s.id}])});
 }
 export async function showSubjectLectures(id:number,subjectId:string){
-  const {data,error}=await supabase.from("lectures").select("id,lecture_number,title,index_status").eq("subject_id",subjectId).order("lecture_number");if(error)throw error;
+  const {data,error}=await supabase.from("lectures").select("id,lecture_number,title").eq("subject_id",subjectId).order("lecture_number");if(error)throw error;
   if(!data?.length)return void await sendMessage(id,"📚 مفيش محاضرات للمادة دي.",mainKeyboard);
   await sendMessage(id,"📚 اختار المحاضرة:",{inline_keyboard:data.map((l:any)=>[{text:"محاضرة "+l.lecture_number+" — "+l.title,callback_data:"lecture:"+l.id}])});
 }
