@@ -1,0 +1,22 @@
+{
+  "name": "business-admin-ai-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Telegram educational bot for first-year Business Administration students.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.58.0",
+    "@vercel/node": "^5.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
