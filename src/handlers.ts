@@ -89,7 +89,7 @@ async function activateStudent(id:number,code:string) {
 }
 
 async function startLectureUpload(id:number,fileId:string,fileName?:string) {
-  await saveSession(id,"lecture_subject",{file_id:fileId,file_name:fileName ?? ""});
+  await saveSession(id,"admin_lecture_subject",{file_id:fileId,file_name:fileName ?? ""});
   const {data,error}=await supabase.from("subjects").select("id,name").order("name");
   if(error) throw error;
   if(!data?.length) {
