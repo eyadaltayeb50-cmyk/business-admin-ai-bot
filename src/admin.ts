@@ -23,12 +23,14 @@ export async function showStudent(id:number,studentId:string){
 }
 export async function toggleStudent(id:number,studentId:string){
   const {data,error}=await supabase.from("students").select("status").eq("id",studentId).maybeSingle();if(error)throw error;if(!data)return;
-  await supabase.from("students").update({status:data.status==="active"?"blocked":"active"}).eq("id",studentId);await showStudent(id,studentId);
+  const {error:updateError}=await supabase.from("students").update({status:data.status==="active"?"blocked":"active"}).eq("id",studentId);if(updateError)throw updateError;
+  await showStudent(id,studentId);
 }
 export async function resetStudentCode(id:number,studentId:string){
   const {data,error}=await supabase.from("students").select("access_code_id").eq("id",studentId).maybeSingle();if(error)throw error;if(!data)return;
-  if(data.access_code_id)await supabase.from("access_codes").update({status:"available",bound_telegram_id:null,used_at:null}).eq("id",data.access_code_id);
-  await supabase.from("students").delete().eq("id",studentId);await sendMessage(id,"♻️ تم فصل الطالب عن الكود. سيحتاج لكود جديد عند /start.",adminKeyboard);
+  if(data.access_code_id){const {error:e}=await supabase.from("access_codes").update({status:"available",bound_telegram_id:null,used_at:null}).eq("id",data.access_code_id);if(e)throw e;}
+  const {error:e}=await supabase.from("students").delete().eq("id",studentId);if(e)throw e;
+  await sendMessage(id,"♻️ تم فصل الطالب عن الكود. سيحتاج لكود جديد عند /start.",adminKeyboard);
 }
 export async function listSubjects(id:number){
   const {data,error}=await supabase.from("subjects").select("id,name").order("name");if(error)throw error;
@@ -39,7 +41,7 @@ export async function listSubjects(id:number){
 export async function listLectures(id:number){
   const {data,error}=await supabase.from("lectures").select("id,lecture_number,title").order("created_at",{ascending:false}).limit(50);if(error)throw error;
   if(!data?.length)return void await sendMessage(id,"📚 لا توجد محاضرات.",adminKeyboard);
-  await sendMessage(id,"🗑️ اختار المحاضرة للحذف:",{inline_keyboard:data.map((l:any)=>[{text:"🗑️ "+l.lecture_number+" — "+l.title+" ("+l.index_status+")",callback_data:"deletelecture:"+l.id}])});
+  await sendMessage(id,"🗑️ اختار المحاضرة للحذف:",{inline_keyboard:data.map((l:any)=>[{text:"🗑️ "+l.lecture_number+" — "+l.title,callback_data:"deletelecture:"+l.id}])});
 }
 export async function listEvents(id:number){
   const {data,error}=await supabase.from("events").select("id,title,event_date").order("event_date").limit(30);if(error)throw error;
@@ -48,7 +50,7 @@ export async function listEvents(id:number){
 }
 export async function broadcast(id:number,text:string){
   const {data,error}=await supabase.from("students").select("telegram_id").eq("status","active");if(error)throw error;let sent=0,failed=0;
-  for(const s of data??[]){try{await (await import("./telegram.js")).sendMessage(s.telegram_id,text);sent++;}catch{failed++;}}
+  for(const s of data??[]){try{await sendMessage(s.telegram_id,text);sent++;}catch{failed++;}}
   await sendMessage(id,"📢 الإرسال انتهى\nنجح: "+sent+"\nفشل: "+failed,adminKeyboard);
 }
 export async function createEvent(id:number,title:string,description:string,date:string){
