@@ -28,8 +28,9 @@ export function sendDocument(chatId:number,fileId:string,caption?:string){
 export function answerCallbackQuery(id:string,text?:string){
   return telegramRequest("answerCallbackQuery",{callback_query_id:id,...(text?{text}:{})});
 }
+
 export const mainKeyboard:TelegramReplyMarkup={keyboard:[
   [{text:"📚 المحاضرات"},{text:"🔍 البحث"}],
-  [{text:"🤖 اسأل AI"},{text:"🆕 آخر ما نزل"}],
-  [{text:"📢 الإعلانات"},{text:"📅 المواعيد"}]
+  [{text:"🆕 آخر ما نزل"},{text:"📢 الإعلانات"}],
+  [{text:"📅 المواعيد"}]
 ],resize_keyboard:true};
