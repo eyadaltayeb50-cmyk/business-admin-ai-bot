@@ -37,7 +37,7 @@ export async function listSubjects(id:number){
   await sendMessage(id,"➕ لإضافة مادة: /addsubject",adminKeyboard);
 }
 export async function listLectures(id:number){
-  const {data,error}=await supabase.from("lectures").select("id,lecture_number,title,index_status").order("created_at",{ascending:false}).limit(50);if(error)throw error;
+  const {data,error}=await supabase.from("lectures").select("id,lecture_number,title").order("created_at",{ascending:false}).limit(50);if(error)throw error;
   if(!data?.length)return void await sendMessage(id,"📚 لا توجد محاضرات.",adminKeyboard);
   await sendMessage(id,"🗑️ اختار المحاضرة للحذف:",{inline_keyboard:data.map((l:any)=>[{text:"🗑️ "+l.lecture_number+" — "+l.title+" ("+l.index_status+")",callback_data:"deletelecture:"+l.id}])});
 }
