@@ -28,16 +28,6 @@ export function sendDocument(chatId:number,fileId:string,caption?:string){
 export function answerCallbackQuery(id:string,text?:string){
   return telegramRequest("answerCallbackQuery",{callback_query_id:id,...(text?{text}:{})});
 }
-export async function getFilePath(fileId:string){
-  const file = await telegramRequest<{file_path?:string}>("getFile",{file_id:fileId});
-  if(!file.file_path) throw new Error("Telegram file path not returned.");
-  return file.file_path;
-}
-export async function getTelegramFileUrl(fileId:string){
-  const path = await getFilePath(fileId);
-  return `${api.replace(/\/bot[^/]+$/, "")}/file/bot${config.telegramBotToken}/${path}`;
-}
-
 export const mainKeyboard:TelegramReplyMarkup={keyboard:[
   [{text:"📚 المحاضرات"},{text:"🔍 البحث"}],
   [{text:"🤖 اسأل AI"},{text:"🆕 آخر ما نزل"}],
